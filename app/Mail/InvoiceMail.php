@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\CompanySetting;
 use App\Models\Invoice;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
@@ -14,6 +15,7 @@ class InvoiceMail extends Mailable
 
     public $invoice;
     public $gstRate;
+
 
     public function __construct(Invoice $invoice, $gstRate = 18)
     {
@@ -28,16 +30,22 @@ class InvoiceMail extends Mailable
      */
     public function build()
     {
+
+        $company = CompanySetting::where('user_id', $this->invoice->user_id)->first();
         $pdf = Pdf::loadView('invoices.pdf', [
             'invoice' => $this->invoice,
-            'gstRate' => $this->gstRate
+            'gstRate' => $this->gstRate,
+            'company' => $company,
+
         ]);
 
         return $this->subject('Your Invoice')
             ->view('emails.invoice')
             ->with([
                 'invoice' => $this->invoice,
-                'gstRate' => $this->gstRate
+                'gstRate' => $this->gstRate,
+                'company' => $company,
+
             ])
             ->attachData($pdf->output(), 'invoice-' . $this->invoice->invoice_number . '.pdf');
     }

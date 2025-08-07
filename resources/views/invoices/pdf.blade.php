@@ -61,11 +61,10 @@
 <body>
 
     <div class="header">
-        <img src="{{ public_path('logo.png') }}" alt="Company Logo" style="width: 100px;">
-        <div class="company-name">Your Company Name</div>
-        <div>GST No: 1234ABCDE1234F1Z5</div>
-        <div>Email: contact@yourcompany.com</div>
-        <div>Phone: +91-9876543210</div>
+        <img src="{{ public_path('storage/' . $company->logo_path) }}" alt="Company Logo" style="width: 100px;">
+        <div class="company-name">{{ $company->company_name}}</div>
+        <div>{{ $company->address}}</div>
+        <div>{{ $company->phone}}</div>
     </div>
 
     <div class="invoice-title">Invoice</div>
@@ -87,9 +86,9 @@
     </table>
 
     @if ($invoice->status === 'paid')
-        <h2 style="color: green; text-align: right;">PAID</h2>
+    <h2 style="color: green; text-align: right;">PAID</h2>
     @elseif ($invoice->status === 'overdue')
-        <h2 style="color: red; text-align: right;">OVERDUE</h2>
+    <h2 style="color: red; text-align: right;">OVERDUE</h2>
     @endif
 
 
@@ -105,13 +104,13 @@
         </thead>
         <tbody>
             @foreach ($invoice->items as $index => $item)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $item->description }}</td>
-                    <td>{{ $item->quantity }}</td>
-                    <td>₹{{ number_format($item->unit_price, 2) }}</td>
-                    <td>₹{{ number_format($item->total, 2) }}</td>
-                </tr>
+            <tr>
+                <td>{{ $index + 1 }}</td>
+                <td>{{ $item->description }}</td>
+                <td>{{ $item->quantity }}</td>
+                <td>₹{{ number_format($item->unit_price, 2) }}</td>
+                <td>₹{{ number_format($item->total, 2) }}</td>
+            </tr>
             @endforeach
             <tr class="total-row">
                 <td colspan="4" class="text-right">Subtotal</td>

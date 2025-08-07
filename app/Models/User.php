@@ -7,8 +7,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable
+class User extends Authenticatable implements JWTSubject
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -18,7 +19,8 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
         'password',
     ];
@@ -41,4 +43,37 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    // Add required methods for JWTSubject
+    public function getJWTIdentifier()
+    {
+        return $this->getKey(); // usually 'id'
+    }
+
+    public function getJWTCustomClaims()
+    {
+        return []; // you can add custom claims if needed
+    }
+
+    /**
+     * A user can have many clients.
+     */
+    public function clients()
+    {
+        return $this->hasMany(Client::class);
+    }
+
+    /**
+     * A user can have many invoices.
+     */
+    public function invoices()
+    {
+        return $this->hasMany(Invoice::class);
+    }
+    public function companySetting()
+    {
+        return $this->hasOne(CompanySetting::class);
+    }
+
+    
 }

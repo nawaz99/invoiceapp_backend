@@ -9,67 +9,77 @@ use Illuminate\Http\Request;
 class ClientController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
+     * List only the logged-in user's clients
      */
     public function index()
     {
-             return Client::all();
+        return Client::where('user_id', auth()->id())->get();
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * Store a newly created client for the logged-in user
      */
     public function store(Request $request)
     {
-          $validated = $request->validate([
-            'name' => 'required|string',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email:rfc,dns|max:255',
+            'phone' => 'nullable|string|max:20',
             'address' => 'nullable|string',
+            'gstin' => 'nullable|string|size:15'
         ]);
 
+        // Attach logged-in user
+        $validated['user_id'] = auth()->id();
+
         $client = Client::create($validated);
+
         return response()->json($client, 201);
     }
 
     /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Show a single client (only if owned by user)
      */
     public function show(Client $client)
     {
-          return $client;
+        if ($client->user_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+        return $client;
     }
 
     /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Update a client (only if owned by user)
      */
     public function update(Request $request, Client $client)
     {
-        $client->update($request->all());
+        if ($client->user_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $validated = $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email:rfc,dns|max:255',
+            'phone' => 'nullable|string|max:20',
+            'address' => 'nullable|string',
+            'gstin' => 'nullable|string|size:15'
+        ]);
+
+        $client->update($validated);
+
         return response()->json($client);
     }
 
     /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * Delete a client (only if owned by user)
      */
     public function destroy(Client $client)
     {
+        if ($client->user_id !== auth()->id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $client->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Client deleted']);
     }
 }
